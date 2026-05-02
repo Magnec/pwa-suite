@@ -1,0 +1,16 @@
+{#
+/**
+ * @file
+ * PWA kurulum banner şablonu.
+ */
+#}
+<div class="pwa-install-banner pwa-install-banner--template" style="display:none">
+  <div class="pwa-install-banner__content">
+    {% if title %}<strong>{{ title }}</strong>{% endif %}
+    {% if body %}<p>{{ body }}</p>{% endif %}
+  </div>
+  <div class="pwa-install-banner__actions">
+    <button type="button" class="pwa-install-btn">{{ install_label }}</button>
+    <button type="button" class="pwa-dismiss-btn" aria-label="{{ dismiss_label }}">✕</button>
+  </div>
+</div>

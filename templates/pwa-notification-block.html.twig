@@ -1,0 +1,191 @@
+{#
+/**
+ * @file
+ * PWA push bildirim bloğu — 9 varyant.
+ *
+ * Notlar:
+ * - Butonlarda hardcoded ikon span yoktur; label içindeki emoji yeterlidir.
+ * - Boş label durumunda JS side varsayılan metin kullanılır.
+ * - data-pwa-subscribe / data-pwa-unsubscribe butonları loading state alır.
+ */
+#}
+{% if push_enabled %}
+
+{# ── 1. DEFAULT ── #}
+{% if variant == 'default' or not variant %}
+<div class="pwa-nb pwa-nb--default">
+  <button data-pwa-subscribe class="pwa-btn pwa-btn--subscribe" type="button">
+    <span class="pwa-btn__label">{{ subscribe_label|default('Bildirimlere Abone Ol') }}</span>
+  </button>
+  <button data-pwa-unsubscribe class="pwa-btn pwa-btn--unsubscribe" type="button" hidden>
+    <span class="pwa-btn__label">{{ unsubscribe_label|default('Aboneliği İptal Et') }}</span>
+  </button>
+  {% if show_status %}<p data-pwa-push-status class="pwa-status" aria-live="polite"></p>{% endif %}
+</div>
+
+{# ── 2. TOGGLE ── #}
+{% elseif variant == 'toggle' %}
+<div class="pwa-nb pwa-nb--toggle">
+  <button
+    data-pwa-push-toggle
+    data-label-on="{{ toggle_label_on|default(subscribe_label)|default('Bildirimlere Abone Ol') }}"
+    data-label-off="{{ toggle_label_off|default(unsubscribe_label)|default('Bildirimleri Kapat') }}"
+    data-subscribed="0"
+    class="pwa-btn pwa-btn--toggle"
+    type="button">
+    <span class="pwa-btn__label">{{ toggle_label_on|default(subscribe_label)|default('Bildirimlere Abone Ol') }}</span>
+  </button>
+  {% if show_status %}<p data-pwa-push-status class="pwa-status" aria-live="polite"></p>{% endif %}
+</div>
+
+{# ── 3. FLOATING FAB ── #}
+{% elseif variant == 'floating' %}
+<div class="pwa-nb pwa-nb--floating">
+  <button data-pwa-subscribe class="pwa-fab pwa-fab--on" type="button"
+    aria-label="{{ subscribe_label|default('Bildirimlere Abone Ol') }}">
+    <span class="pwa-fab__pulse" aria-hidden="true"></span>
+    <span class="pwa-fab__inner">
+      <span class="pwa-fab__icon" aria-hidden="true">🔔</span>
+      <span class="pwa-fab__label">{{ subscribe_label|default('Abone Ol') }}</span>
+    </span>
+  </button>
+  <button data-pwa-unsubscribe class="pwa-fab pwa-fab--off" type="button" hidden
+    aria-label="{{ unsubscribe_label|default('Aboneliği İptal Et') }}">
+    <span class="pwa-fab__inner">
+      <span class="pwa-fab__icon" aria-hidden="true">🔕</span>
+      <span class="pwa-fab__label">{{ unsubscribe_label|default('İptal Et') }}</span>
+    </span>
+  </button>
+</div>
+
+{# ── 4. MODAL — Sayfada UI yok, sadece config div + dialog ── #}
+{% elseif variant == 'modal' %}
+<div data-pwa-modal-auto="pwa-push-modal"
+  data-delay="{{ modal_auto_delay|default(5000) }}"
+  hidden aria-hidden="true"></div>
+<div class="pwa-modal-overlay" id="pwa-push-modal"
+  role="dialog" aria-modal="true" aria-labelledby="pwa-modal-title" hidden>
+  <div class="pwa-modal">
+    <button class="pwa-modal__close" type="button" aria-label="Kapat" data-pwa-modal-close>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="pwa-modal__hero" aria-hidden="true">
+      <span class="pwa-modal__emoji">{{ modal_icon|default('🔔') }}</span>
+      <div class="pwa-modal__hero-ring"></div>
+    </div>
+    <div class="pwa-modal__body">
+      <h2 class="pwa-modal__title" id="pwa-modal-title">
+        {{ modal_title|default('Bildirimlere Abone Ol') }}
+      </h2>
+      <p class="pwa-modal__desc">
+        {{ modal_description|default('Yeni içeriklerden anında haberdar olmak için bildirimlere abone olun.') }}
+      </p>
+      <div data-pwa-modal-subscribe-view>
+        <button data-pwa-subscribe class="pwa-btn pwa-btn--subscribe pwa-modal__cta" type="button">
+          <span class="pwa-btn__label">{{ subscribe_label|default('Bildirimleri Aç') }}</span>
+        </button>
+        <button class="pwa-modal__later" type="button" data-pwa-modal-close>Şimdi değil</button>
+      </div>
+      <div data-pwa-modal-unsubscribe-view hidden>
+        <p class="pwa-modal__active-msg">✅ Bildirimlere abonesiniz.</p>
+        <button data-pwa-unsubscribe class="pwa-btn pwa-btn--unsubscribe pwa-modal__cta" type="button">
+          <span class="pwa-btn__label">{{ unsubscribe_label|default('Aboneliği İptal Et') }}</span>
+        </button>
+        <button class="pwa-modal__later" type="button" data-pwa-modal-close>Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── 5. BANNER ── #}
+{% elseif variant == 'banner' %}
+<div class="pwa-nb pwa-nb--banner">
+  <div class="pwa-banner" data-pwa-banner-subscribe-view>
+    <div class="pwa-banner__icon" aria-hidden="true">🔔</div>
+    <div class="pwa-banner__content">
+      <strong class="pwa-banner__title">Bildirimleri Aç</strong>
+      <span class="pwa-banner__text">{{ banner_text|default('Yeni içeriklerden anında haberdar olun!') }}</span>
+    </div>
+    <div class="pwa-banner__actions">
+      <button data-pwa-subscribe class="pwa-banner__yes" type="button">
+        {{ subscribe_label|default('Abone Ol') }}
+      </button>
+      <button class="pwa-banner__dismiss" type="button" data-pwa-banner-dismiss aria-label="Kapat">✕</button>
+    </div>
+  </div>
+  <div class="pwa-banner pwa-banner--success" data-pwa-banner-success-view hidden>
+    <div class="pwa-banner__icon" aria-hidden="true">✅</div>
+    <span class="pwa-banner__text">Bildirimler aktif!</span>
+    <button data-pwa-unsubscribe class="pwa-banner__dismiss" type="button">
+      {{ unsubscribe_label|default('İptal') }}
+    </button>
+  </div>
+</div>
+
+{# ── 6. CARD ── #}
+{% elseif variant == 'card' %}
+<div class="pwa-nb pwa-nb--card">
+  <div class="pwa-card">
+    <div class="pwa-card__header">
+      {% if card_image_url %}
+      <div class="pwa-card__img" style="background-image:url('{{ card_image_url }}');" role="img" aria-label="{{ card_title }}"></div>
+      {% else %}
+      <div class="pwa-card__emoji" aria-hidden="true">{{ modal_icon|default('🔔') }}</div>
+      {% endif %}
+    </div>
+    <div class="pwa-card__body">
+      <h3 class="pwa-card__title">{{ card_title|default('Bildirimlere Abone Ol') }}</h3>
+      <p class="pwa-card__desc">{{ card_description|default('Yeni içeriklerden anında haberdar ol. Hiçbir şeyi kaçırma!') }}</p>
+      <button data-pwa-subscribe class="pwa-btn pwa-btn--subscribe pwa-card__cta" type="button">
+        <span class="pwa-btn__label">{{ subscribe_label|default('Abone Ol') }}</span>
+      </button>
+      <button data-pwa-unsubscribe class="pwa-btn pwa-btn--unsubscribe pwa-card__cta" type="button" hidden>
+        <span class="pwa-btn__label">{{ unsubscribe_label|default('Aboneliği İptal Et') }}</span>
+      </button>
+      {% if show_status %}<p data-pwa-push-status class="pwa-status" aria-live="polite"></p>{% endif %}
+    </div>
+  </div>
+</div>
+
+{# ── 7. INLINE SWITCH ── #}
+{% elseif variant == 'inline-switch' %}
+<div class="pwa-nb pwa-nb--switch">
+  <div class="pwa-switch-row">
+    <div class="pwa-switch-row__icon" aria-hidden="true">🔔</div>
+    <div class="pwa-switch-row__info">
+      <span class="pwa-switch-row__label">{{ subscribe_label|default('Bildirimler') }}</span>
+      {% if show_status %}
+      <small data-pwa-push-status class="pwa-status pwa-status--inline" aria-live="polite">Kapalı</small>
+      {% endif %}
+    </div>
+    <button class="pwa-ios-switch" type="button" role="switch" aria-checked="false"
+      data-pwa-push-switch aria-label="{{ subscribe_label|default('Bildirimler') }}">
+      <span class="pwa-ios-switch__track" aria-hidden="true">
+        <span class="pwa-ios-switch__thumb"></span>
+      </span>
+    </button>
+  </div>
+</div>
+
+{# ── 8. SNACKBAR — Sayfada hiçbir şey, JS body'ye ekler ── #}
+{% elseif variant == 'snackbar' %}
+<div data-pwa-snackbar-config
+  data-subscribe-label="{{ subscribe_label|default('Abone Ol') }}"
+  data-banner-text="{{ banner_text|default('Bildirimlere abone olmak ister misiniz?') }}"
+  data-delay="4000"
+  hidden aria-hidden="true"></div>
+
+{# ── 9. PROMPT — Sağ altta kayan izin kartı ── #}
+{% elseif variant == 'prompt' %}
+<div data-pwa-prompt-config
+  data-subscribe-label="{{ subscribe_label|default('Evet, Abone Ol') }}"
+  data-title="{{ card_title|default('Bildirimlere Abone Ol') }}"
+  data-desc="{{ card_description|default('Yeni içeriklerden anında haberdar ol!') }}"
+  data-icon="{{ modal_icon|default('🔔') }}"
+  data-delay="{{ modal_auto_delay|default(5000) }}"
+  hidden aria-hidden="true"></div>
+
+{% endif %}
+{% endif %}

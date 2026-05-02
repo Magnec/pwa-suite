@@ -1,0 +1,8 @@
+services:
+  pwa_suite.drush_commands:
+    class: Drupal\pwa_suite\Commands\PwaSuiteCommands
+    arguments:
+      - '@pwa_suite.vapid_key_service'
+      - '@pwa_suite.push_notification_service'
+    tags:
+      - { name: drush.command }

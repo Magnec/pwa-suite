@@ -1,0 +1,150 @@
+name: ''
+short_name: ''
+description: ''
+id: ''
+start_url: '/?source=pwa'
+scope: '/'
+display: 'standalone'
+display_override: []
+theme_color: '#1565c0'
+background_color: '#ffffff'
+orientation: 'any'
+categories: []
+lang: 'tr'
+dir: 'ltr'
+icons: []
+icons_manual: []
+screenshots: []
+shortcuts_from_menu: false
+shortcuts: []
+related_applications: []
+prefer_related_applications: false
+share_target_enabled: false
+share_target_action: '/share-target'
+protocol_handlers: []
+iarc_rating_id: ''
+launch_handler_client_mode: 'auto'
+edge_side_panel_enabled: false
+edge_side_panel_preferred_width: 400
+file_handlers: []
+widgets: []
+note_taking_new_note_url: ''
+tab_strip_enabled: false
+scope_extensions: []
+icon_fids:
+  icon_512: 0
+  icon_192: 0
+  icon_384: 0
+  icon_256: 0
+  icon_180: 0
+  icon_152: 0
+  icon_144: 0
+  icon_128: 0
+  icon_96:  0
+  icon_72:  0
+  icon_48:  0
+favicon_fid: 0
+icon_maskable_fid: 0
+icon_maskable_192_fid: 0
+push_notification_icon_url: ''
+push_notification_badge_url: ''
+push_notification_icon_fid: 0
+push_notification_badge_fid: 0
+ios_meta_enabled: true
+ios_status_bar_style: 'black-translucent'
+ios_splash_screens: true
+ios_splash_bg_color: '#ffffff'
+ios_smart_banner_enabled: false
+ios_app_id: ''
+sw_enabled: true
+sw_debug: false
+sw_cache_version: 'v1'
+sw_strategies:
+  - pattern: '\.(?:png|jpg|jpeg|webp|svg|gif|ico)$'
+    strategy: 'CacheFirst'
+    cache_name: 'pwa-images'
+    max_entries: 100
+    max_age_seconds: 2592000
+  - pattern: '\.(?:woff2?|ttf|eot|otf)$'
+    strategy: 'CacheFirst'
+    cache_name: 'pwa-fonts'
+    max_entries: 30
+    max_age_seconds: 2592000
+  - pattern: '\.(?:js|css)$'
+    strategy: 'StaleWhileRevalidate'
+    cache_name: 'pwa-static'
+    max_entries: 60
+    max_age_seconds: 86400
+  - pattern: '^/api/'
+    strategy: 'NetworkFirst'
+    cache_name: 'pwa-api'
+    max_entries: 30
+    max_age_seconds: 300
+sw_precache_urls: []
+sw_offline_url: '/offline'
+sw_offline_node: 0
+sw_offline_html: ''
+sw_auto_version: false
+sw_auto_version_interval: 604800
+sw_bg_sync_enabled: true
+sw_bg_sync_tag: 'pwa-form-sync'
+sw_periodic_sync_enabled: false
+sw_periodic_sync_interval: 3600
+sw_navigation_preload: false
+push_enabled: true
+push_vapid_subject: ''
+triggers:
+  node_insert:
+    enabled: false
+    content_types: []
+    title_template: 'Yeni İçerik: [node:title]'
+    body_template: '[node:body:summary]'
+    url_template: '[node:url]'
+    targets:
+      - 'all'
+    roles: []
+  node_update:
+    enabled: false
+    content_types: []
+    title_template: 'Güncellendi: [node:title]'
+    body_template: '[node:title]'
+    url_template: '[node:url]'
+    targets:
+      - 'all'
+    roles: []
+  node_published:
+    enabled: false
+    content_types: []
+    title_template: 'Yayınlandı: [node:title]'
+    body_template: '[node:body:summary]'
+    url_template: '[node:url]'
+    targets:
+      - 'all'
+    roles: []
+  comment_insert:
+    enabled: false
+    content_types: []
+    title_template: 'Yeni Yorum: [comment:subject]'
+    body_template: '[comment:subject]'
+    url_template: '[comment:node:url]'
+    targets:
+      - 'node_author'
+    roles: []
+  comment_reply:
+    enabled: false
+    content_types: []
+    title_template: 'Yorumunuza yanıt: [comment:subject]'
+    body_template: '[comment:subject]'
+    url_template: '[comment:node:url]'
+    targets:
+      - 'comment_author'
+      - 'node_author'
+    roles: []
+install_banner_enabled: true
+install_banner_delay: 3000
+install_banner_title: 'Uygulamayı Yükle'
+install_banner_body: 'Daha iyi bir deneyim için uygulamayı yükleyin.'
+web_share_enabled: false
+rate_limit_subscribe: 10
+pwa_page_meta: true
+https_redirect: false

@@ -1,0 +1,6 @@
+pwa_suite.admin:
+  title: 'PWA Suite'
+  description: 'Web App Manifest, Service Worker ve Push Bildirimleri yapılandırın.'
+  parent: system.admin_config_system
+  route_name: pwa_suite.settings
+  weight: 10

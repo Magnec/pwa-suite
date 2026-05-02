@@ -1,0 +1,13 @@
+{#
+/**
+ * @file
+ * PWA uygulama yükleme bloğu.
+ */
+#}
+<div class="pwa-install-block" style="display:none" id="pwa-install-block">
+  {% if title %}<strong>{{ title }}</strong>{% endif %}
+  {% if body %}<p>{{ body }}</p>{% endif %}
+  <button type="button" class="pwa-install-btn" data-pwa-install>
+    {{ install_label }}
+  </button>
+</div>

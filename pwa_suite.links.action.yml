@@ -1,0 +1,6 @@
+pwa_suite.send_notification_action:
+  title: 'Bildirim Gönder'
+  route_name: pwa_suite.send_notification
+  appears_on:
+    - pwa_suite.subscribers
+    - pwa_suite.stats

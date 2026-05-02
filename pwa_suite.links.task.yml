@@ -1,0 +1,29 @@
+pwa_suite.tab.settings:
+  title: 'Genel Ayarlar'
+  route_name: pwa_suite.settings
+  base_route: pwa_suite.settings
+  weight: 0
+
+pwa_suite.tab.subscribers:
+  title: 'Push Aboneleri'
+  route_name: pwa_suite.subscribers
+  base_route: pwa_suite.settings
+  weight: 1
+
+pwa_suite.tab.send:
+  title: 'Bildirim Gönder'
+  route_name: pwa_suite.send_notification
+  base_route: pwa_suite.settings
+  weight: 2
+
+pwa_suite.tab.stats:
+  title: 'İstatistikler'
+  route_name: pwa_suite.stats
+  base_route: pwa_suite.settings
+  weight: 3
+
+pwa_suite.diagnostics:
+  title: 'PWA Tanı'
+  route_name: pwa_suite.diagnostics
+  base_route: pwa_suite.settings
+  weight: 99

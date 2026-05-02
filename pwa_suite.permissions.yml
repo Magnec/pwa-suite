@@ -1,0 +1,18 @@
+administer pwa suite:
+  title: 'PWA Suite yönet'
+  description: 'PWA Suite modülünü yapılandır, bildirimleri yönet.'
+  restrict access: true
+
+subscribe to push notifications:
+  title: 'Push bildirimlerine abone ol'
+  description: 'Kullanıcının push bildirimlerine abone olmasına izin verir.'
+
+send push notifications:
+  title: 'Push bildirimi gönder'
+  description: 'Kullanıcılara push bildirimi gönderebilir.'
+  restrict access: true
+
+view push subscribers:
+  title: 'Push abonelerini görüntüle'
+  description: 'Push abonesi listesini görüntüleyebilir.'
+  restrict access: true

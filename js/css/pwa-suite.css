@@ -1,0 +1,561 @@
+/* ════════════════════════════════════════════════════════════════
+   PWA Suite — Frontend Stiller
+   8 varyant: default, toggle, floating, modal, banner, card,
+              inline-switch, snackbar
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Değişkenler ─────────────────────────────────────────────── */
+:root {
+  --pwa-c:       var(--pwa-theme-color, #2563eb);
+  --pwa-c-dark:  color-mix(in srgb, var(--pwa-c) 75%, #000);
+  --pwa-c-off:   #64748b;
+  --pwa-c-danger:#dc2626;
+  --pwa-r:       10px;
+  --pwa-r-lg:    16px;
+  --pwa-shadow:  0 4px 24px rgba(0,0,0,.14);
+  --pwa-shadow-lg:0 8px 40px rgba(0,0,0,.2);
+  --pwa-t:       .18s ease;
+  --pwa-font:    inherit;
+}
+
+/* ── Paylaşılan buton sistemi ────────────────────────────────── */
+.pwa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  border-radius: var(--pwa-r);
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--pwa-font);
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1.3;
+  transition: opacity var(--pwa-t), transform var(--pwa-t), background var(--pwa-t);
+}
+.pwa-btn:active { transform: scale(.97); }
+
+.pwa-btn--primary {
+  background: var(--pwa-c);
+  color: #fff;
+}
+.pwa-btn--primary:hover { opacity: .88; }
+
+.pwa-btn--muted {
+  background: #f1f5f9;
+  color: var(--pwa-c-off);
+}
+.pwa-btn--muted:hover { background: #e2e8f0; }
+
+.pwa-btn--danger { background: var(--pwa-c-danger); color: #fff; }
+.pwa-btn--danger:hover { opacity: .88; }
+
+.pwa-btn__icon { font-size: 15px; line-height: 1; }
+
+/* Durum metni */
+.pwa-status       { font-size: 12px; color: #94a3b8; margin: 5px 0 0; line-height: 1.4; }
+.pwa-status--inline { display: inline; margin: 0; }
+
+/* ── 1. DEFAULT ──────────────────────────────────────────────── */
+.pwa-nb--default {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* ── 2. TOGGLE ───────────────────────────────────────────────── */
+.pwa-nb--toggle {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.pwa-btn--toggle {
+  background: var(--pwa-c);
+  color: #fff;
+  min-width: 190px;
+  justify-content: center;
+}
+.pwa-btn--toggle[data-subscribed="1"] { background: var(--pwa-c-off); }
+.pwa-btn--toggle:hover { opacity: .88; }
+.pwa-toggle-icon { transition: transform var(--pwa-t); }
+.pwa-btn--toggle[data-subscribed="1"] .pwa-toggle-icon { transform: rotate(-15deg); }
+
+/* ── 3. FLOATING FAB ─────────────────────────────────────────── */
+.pwa-nb--floating {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9990;
+}
+.pwa-fab {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: none;
+  border-radius: 50px;
+  padding: 13px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--pwa-shadow);
+  transition: transform var(--pwa-t), box-shadow var(--pwa-t);
+  position: relative;
+  font-family: var(--pwa-font);
+}
+.pwa-fab--on  { background: var(--pwa-c); color: #fff; }
+.pwa-fab--off { background: #fff; color: var(--pwa-c-off); box-shadow: 0 2px 12px rgba(0,0,0,.12), 0 0 0 1px #e2e8f0; }
+.pwa-fab:hover { transform: translateY(-2px); box-shadow: var(--pwa-shadow-lg); }
+.pwa-fab:active { transform: scale(.96); }
+.pwa-fab__icon  { font-size: 18px; line-height: 1; }
+/* Canlılık halkası */
+.pwa-fab__ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50px;
+  border: 2px solid var(--pwa-c);
+  animation: pwa-ring 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes pwa-ring { 0%,100% { opacity:0; transform:scale(1); } 50% { opacity:.25; transform:scale(1.07); } }
+@media (max-width: 480px) {
+  .pwa-fab__label { display: none; }
+  .pwa-fab { padding: 15px; border-radius: 50%; }
+}
+
+/* ── 4. MODAL ────────────────────────────────────────────────── */
+/* Overlay */
+.pwa-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.48);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: pwa-fade .2s ease;
+}
+.pwa-modal-overlay[hidden] { display: none !important; }
+
+@keyframes pwa-fade      { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pwa-slide-up  { from { transform: translateY(24px) scale(.98); opacity:0; } to { transform:none; opacity:1; } }
+@keyframes pwa-slide-dn  { from { transform: translateY(-100%); } to { transform:none; } }
+@keyframes pwa-snack-in  { from { transform: translateX(-50%) translateY(70px); opacity:0; } to { transform:translateX(-50%) translateY(0); opacity:1; } }
+@keyframes pwa-snack-out { from { transform: translateX(-50%) translateY(0); opacity:1; } to { transform:translateX(-50%) translateY(70px); opacity:0; } }
+
+/* Dialog */
+.pwa-modal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 36px 28px 28px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  box-shadow: var(--pwa-shadow-lg);
+  animation: pwa-slide-up .22s ease;
+}
+.pwa-modal__close {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 50%;
+  width: 30px; height: 30px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #64748b;
+  transition: background var(--pwa-t);
+}
+.pwa-modal__close:hover { background: #e2e8f0; }
+.pwa-modal__icon   { font-size: 52px; display: block; margin-bottom: 12px; line-height: 1; }
+.pwa-modal__title  { font-size: 20px; font-weight: 700; margin: 0 0 8px; color: #0f172a; }
+.pwa-modal__desc   { font-size: 14px; color: #64748b; line-height: 1.65; margin: 0 0 22px; }
+.pwa-modal__cta    { width: 100%; justify-content: center; font-size: 14px; margin-bottom: 8px; }
+.pwa-modal__later  {
+  background: transparent; border: none; color: #94a3b8;
+  font-size: 13px; cursor: pointer; padding: 6px;
+  display: block; width: 100%;
+  font-family: var(--pwa-font);
+  transition: color var(--pwa-t);
+}
+.pwa-modal__later:hover { color: #475569; }
+.pwa-modal__active-msg { color: #16a34a; font-size: 13px; font-weight: 600; margin: 0 0 14px; }
+
+/* ── 5. BANNER ───────────────────────────────────────────────── */
+.pwa-nb--banner { display: block; }
+.pwa-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--pwa-c);
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: var(--pwa-r);
+  flex-wrap: wrap;
+  animation: pwa-slide-dn .28s ease;
+}
+.pwa-banner--success { background: #15803d; }
+.pwa-banner__icon    { font-size: 20px; flex-shrink: 0; }
+.pwa-banner__text    { flex: 1; font-size: 14px; font-weight: 500; min-width: 130px; }
+.pwa-banner__actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+.pwa-btn--banner-yes {
+  background: #fff; color: var(--pwa-c);
+  border: none; border-radius: 8px; padding: 7px 16px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: var(--pwa-font); transition: opacity var(--pwa-t);
+}
+.pwa-btn--banner-yes:hover { opacity: .9; }
+.pwa-btn--banner-no {
+  background: rgba(255,255,255,.12); color: #fff;
+  border: 1px solid rgba(255,255,255,.3); border-radius: 8px;
+  padding: 6px 12px; font-size: 13px; cursor: pointer;
+  font-family: var(--pwa-font); transition: background var(--pwa-t);
+}
+.pwa-btn--banner-no:hover { background: rgba(255,255,255,.22); }
+
+/* ── 6. CARD ─────────────────────────────────────────────────── */
+.pwa-nb--card { display: block; }
+.pwa-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--pwa-r-lg);
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,.07);
+  transition: box-shadow var(--pwa-t);
+}
+.pwa-card:hover { box-shadow: var(--pwa-shadow); }
+.pwa-card__media {
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--pwa-c);
+}
+.pwa-card__media--emoji {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 52px;
+  background: linear-gradient(135deg, var(--pwa-c), var(--pwa-c-dark));
+}
+.pwa-card__body   { padding: 18px 20px 20px; }
+.pwa-card__title  { font-size: 16px; font-weight: 700; margin: 0 0 5px; color: #0f172a; }
+.pwa-card__desc   { font-size: 13px; color: #64748b; line-height: 1.6; margin: 0 0 16px; }
+.pwa-card__actions{ display: flex; gap: 8px; }
+.pwa-card__btn    { flex: 1; justify-content: center; font-size: 13px; }
+
+/* ── 7. INLINE SWITCH ────────────────────────────────────────── */
+.pwa-nb--switch { display: block; }
+.pwa-switch-row {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 12px; padding: 10px 0;
+}
+.pwa-switch-row__info  { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.pwa-switch-row__label { font-size: 15px; font-weight: 600; color: #0f172a; }
+
+.pwa-ios-switch {
+  flex-shrink: 0; background: transparent; border: none;
+  cursor: pointer; padding: 2px; border-radius: 20px;
+}
+.pwa-ios-switch__track {
+  display: block; width: 50px; height: 28px;
+  background: #cbd5e1; border-radius: 14px; position: relative;
+  transition: background .22s ease;
+}
+.pwa-ios-switch[aria-checked="true"] .pwa-ios-switch__track { background: var(--pwa-c); }
+.pwa-ios-switch__thumb {
+  position: absolute; top: 3px; left: 3px;
+  width: 22px; height: 22px; background: #fff; border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  transition: transform .22s cubic-bezier(.34,1.3,.64,1);
+}
+.pwa-ios-switch[aria-checked="true"] .pwa-ios-switch__thumb { transform: translateX(22px); }
+.pwa-ios-switch:focus-visible { outline: 3px solid var(--pwa-c); outline-offset: 3px; border-radius: 20px; }
+
+/* ── 8. SNACKBAR — Modern kart (JS body'ye ekler) ───────────── */
+@keyframes pwa-snack-in  { from{transform:translateY(14px) scale(.96);opacity:0} to{transform:none;opacity:1} }
+@keyframes pwa-snack-out { from{transform:none;opacity:1} to{transform:translateY(10px) scale(.96);opacity:0} }
+
+.pwa-snackbar {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  left: auto;
+  transform: none;
+  z-index: 10001;
+  width: 310px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow:
+    0 4px 6px -1px rgba(0,0,0,.07),
+    0 12px 40px rgba(0,0,0,.14),
+    0 0 0 1px rgba(0,0,0,.04);
+  overflow: hidden;
+  animation: pwa-snack-in .32s cubic-bezier(.34,1.2,.64,1) forwards;
+  font-family: var(--pwa-font);
+}
+.pwa-snackbar--out { animation: pwa-snack-out .24s ease forwards; }
+
+/* Üst gradient şeridi */
+.pwa-snackbar::before {
+  content: '';
+  display: block;
+  height: 4px;
+  background: var(--pwa-grad);
+}
+
+.pwa-snackbar__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 13px 40px 8px 14px; /* sağ: dismiss için */
+  position: relative;
+}
+.pwa-snackbar__icon-wrap {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg,rgba(79,70,229,.1),rgba(124,58,237,.1));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pwa-snackbar__icon { font-size: 18px; line-height: 1; }
+.pwa-snackbar__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pwa-snackbar__title { font-size: 13px; font-weight: 700; color: #0f172a; line-height: 1.35; display: block; }
+.pwa-snackbar__desc  { font-size: 12px; color: #64748b; line-height: 1.45; display: block; margin-top: 1px; }
+
+.pwa-snackbar__dismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: background var(--pwa-t), color var(--pwa-t);
+  flex-shrink: 0;
+}
+.pwa-snackbar__dismiss:hover { background: #e2e8f0; color: #475569; }
+
+.pwa-snackbar__foot {
+  padding: 0 14px 13px;
+}
+.pwa-snackbar__cta {
+  display: block;
+  width: 100%;
+  background: var(--pwa-grad);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--pwa-font);
+  text-align: center;
+  letter-spacing: .01em;
+  transition: opacity var(--pwa-t), transform var(--pwa-t);
+  box-shadow: 0 2px 8px rgba(79,70,229,.28);
+}
+.pwa-snackbar__cta:hover  { opacity: .9; transform: translateY(-1px); }
+.pwa-snackbar__cta:active { transform: scale(.97); }
+
+/* Warn varyantı */
+.pwa-snackbar--warn::before { background: linear-gradient(135deg,#f59e0b,#dc2626); }
+.pwa-snackbar--warn .pwa-snackbar__icon-wrap { background: linear-gradient(135deg,rgba(245,158,11,.1),rgba(220,38,38,.1)); }
+
+@media (max-width: 479px) {
+  .pwa-snackbar { left: 12px; right: 12px; width: auto; bottom: 16px; }
+}
+
+/* ── Install Banner ──────────────────────────────────────────── */
+.pwa-install-banner {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #fff; border-top: 3px solid var(--pwa-c);
+  box-shadow: 0 -4px 20px rgba(0,0,0,.12); padding: 14px 20px;
+  z-index: 9998; display: flex; align-items: center;
+  justify-content: space-between; gap: 12px;
+  animation: pwa-slide-up .28s ease;
+}
+.pwa-install-banner__content strong { display: block; font-size: 15px; color: #0f172a; font-weight: 700; }
+.pwa-install-banner__content p      { margin: 3px 0 0; font-size: 13px; color: #64748b; }
+.pwa-install-banner__actions        { display: flex; gap: 8px; flex-shrink: 0; }
+.pwa-install-btn {
+  background: var(--pwa-c); color: #fff; border: none;
+  border-radius: var(--pwa-r); padding: 9px 20px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  font-family: var(--pwa-font); transition: opacity var(--pwa-t);
+}
+.pwa-install-btn:hover { opacity: .9; }
+.pwa-dismiss-btn {
+  background: transparent; border: 1px solid #e2e8f0;
+  border-radius: var(--pwa-r); padding: 8px 12px;
+  cursor: pointer; color: #94a3b8; font-size: 16px; line-height: 1;
+}
+.pwa-dismiss-btn:hover { background: #f8fafc; }
+.pwa-install-banner[hidden] { display: none !important; }
+
+/* ── Update Banner ───────────────────────────────────────────── */
+.pwa-update-banner {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: var(--pwa-c); color: #fff;
+  padding: 10px 20px; z-index: 9999;
+  display: flex; align-items: center; gap: 12px; font-size: 14px;
+  animation: pwa-slide-dn .28s ease;
+}
+.pwa-update-banner button {
+  background: rgba(255,255,255,.18); color: #fff;
+  border: 1px solid rgba(255,255,255,.35); border-radius: 7px;
+  padding: 5px 14px; cursor: pointer; font-size: 13px; font-weight: 700;
+  font-family: var(--pwa-font);
+}
+.pwa-update-banner button:hover { background: rgba(255,255,255,.28); }
+
+/* ── iOS Rehberi ─────────────────────────────────────────────── */
+.pwa-ios-guide {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 9998;
+  background: rgba(0,0,0,.4); display: flex; align-items: flex-end;
+  justify-content: center; backdrop-filter: blur(3px);
+  animation: pwa-fade .22s ease;
+}
+.pwa-ios-guide__content {
+  background: #fff; border-radius: 18px 18px 0 0;
+  padding: 24px 20px 32px; max-width: 460px; width: 100%;
+  position: relative; font-size: 15px; line-height: 1.6;
+  animation: pwa-slide-up .28s ease;
+}
+.pwa-ios-guide__content p  { margin: 0 0 10px; font-weight: 700; color: #0f172a; }
+.pwa-ios-guide__content ol { padding-left: 18px; margin: 0; color: #475569; }
+.pwa-ios-guide__content li { margin-bottom: 7px; }
+.pwa-ios-guide__close {
+  position: absolute; top: 12px; right: 14px;
+  background: #f1f5f9; border: none; border-radius: 50%;
+  width: 28px; height: 28px; font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; color: #64748b;
+}
+.pwa-ios-guide__close:hover { background: #e2e8f0; }
+
+/* ── Web Share ───────────────────────────────────────────────── */
+[data-pwa-share] {
+  display: none; background: var(--pwa-c); color: #fff; border: none;
+  border-radius: var(--pwa-r); padding: 10px 18px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  align-items: center; gap: 6px;
+}
+
+/* ── Brave Uyarısı ───────────────────────────────────────────── */
+.pwa-snackbar.pwa-brave-warning { background: #b45309 !important; }
+.pwa-brave-modal-warn {
+  background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px;
+  padding: 10px 12px; margin-bottom: 12px; font-size: 13px;
+  line-height: 1.5; color: #92400e; text-align: left;
+}
+
+/* ── Erişilebilirlik ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .pwa-fab__ring,
+  .pwa-modal, .pwa-modal-overlay, .pwa-snackbar,
+  .pwa-banner, .pwa-update-banner, .pwa-install-banner { animation: none !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Loading State — buton spinner
+   ════════════════════════════════════════════════════════════════ */
+.pwa-btn--loading {
+  pointer-events: none;
+  opacity: .82;
+  position: relative;
+}
+.pwa-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: pwa-spin .7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes pwa-spin { to { transform: rotate(360deg); } }
+
+/* subscribe butonu loading */
+.pwa-btn--subscribe.pwa-btn--loading .pwa-spinner { border-top-color: #fff; }
+/* unsubscribe / muted buton loading */
+.pwa-btn--unsubscribe.pwa-btn--loading { opacity: .7; }
+.pwa-btn--unsubscribe.pwa-btn--loading .pwa-spinner { border-color: rgba(100,116,139,.3); border-top-color: #64748b; }
+
+/* FAB loading */
+.pwa-fab.pwa-btn--loading .pwa-fab__inner { opacity: .5; }
+
+/* iOS switch loading */
+.pwa-ios-switch[aria-busy="true"] .pwa-ios-switch__thumb { opacity: .5; }
+
+/* ════════════════════════════════════════════════════════════════
+   Toast — başarı/hata bildirimleri
+   ════════════════════════════════════════════════════════════════ */
+.pwa-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.pwa-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  min-width: 260px;
+  max-width: min(380px, calc(100vw - 40px));
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,.08), 0 10px 30px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
+  pointer-events: all;
+  animation: pwa-toast-in .28s cubic-bezier(.34,1.2,.64,1) forwards;
+  border-left: 4px solid transparent;
+  font-size: 13.5px;
+  font-family: var(--pwa-font);
+  line-height: 1.45;
+}
+.pwa-toast--success { border-left-color: #16a34a; }
+.pwa-toast--error   { border-left-color: #dc2626; }
+.pwa-toast--info    { border-left-color: var(--pwa-c1, #4f46e5); }
+.pwa-toast--warning { border-left-color: #d97706; }
+
+.pwa-toast--out { animation: pwa-toast-out .22s ease forwards; }
+
+@keyframes pwa-toast-in  { from{transform:translateX(16px) scale(.97);opacity:0} to{transform:none;opacity:1} }
+@keyframes pwa-toast-out { from{transform:none;opacity:1} to{transform:translateX(16px) scale(.97);opacity:0} }
+
+.pwa-toast__icon { font-size: 17px; line-height: 1; flex-shrink: 0; }
+.pwa-toast__msg  { flex: 1; color: #0f172a; font-weight: 500; }
+.pwa-toast__close {
+  background: transparent; border: none; cursor: pointer;
+  color: #94a3b8; padding: 4px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; transition: color var(--pwa-t, .18s ease), background var(--pwa-t, .18s ease);
+}
+.pwa-toast__close:hover { color: #475569; background: #f1f5f9; }
+
+@media (max-width: 479px) {
+  .pwa-toast-container { top: auto; bottom: 16px; right: 12px; left: 12px; }
+  .pwa-toast { max-width: 100%; }
+  @keyframes pwa-toast-in  { from{transform:translateY(12px) scale(.97);opacity:0} to{transform:none;opacity:1} }
+  @keyframes pwa-toast-out { from{transform:none;opacity:1} to{transform:translateY(12px) scale(.97);opacity:0} }
+}

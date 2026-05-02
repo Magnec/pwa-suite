@@ -1,0 +1,218 @@
+pwa_suite.settings:
+  type: config_object
+  label: 'PWA Suite Ayarları'
+  mapping:
+    name:        { type: string }
+    short_name:  { type: string }
+    description: { type: string }
+    id:          { type: string }
+    start_url:   { type: string }
+    scope:       { type: string }
+    display:     { type: string }
+    display_override: { type: sequence, sequence: { type: string } }
+    orientation:      { type: string }
+    theme_color:      { type: string }
+    background_color: { type: string }
+    lang:  { type: string }
+    dir:   { type: string }
+    categories: { type: sequence, sequence: { type: string } }
+    share_target_enabled: { type: boolean }
+    share_target_action:  { type: string }
+    protocol_handlers:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          protocol: { type: string }
+          url:      { type: string }
+    icon_fids:
+      type: mapping
+      mapping:
+        icon_512: { type: integer }
+        icon_192: { type: integer }
+        icon_384: { type: integer }
+        icon_256: { type: integer }
+        icon_180: { type: integer }
+        icon_152: { type: integer }
+        icon_144: { type: integer }
+        icon_128: { type: integer }
+        icon_96:  { type: integer }
+        icon_72:  { type: integer }
+        icon_48:  { type: integer }
+    favicon_fid:           { type: integer }
+    icon_maskable_fid:     { type: integer }
+    icon_maskable_192_fid: { type: integer }
+    icons:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          src:     { type: string }
+          sizes:   { type: string }
+          type:    { type: string }
+          purpose: { type: string }
+    icons_manual:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          src:     { type: string }
+          sizes:   { type: string }
+          type:    { type: string }
+          purpose: { type: string }
+    screenshots:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          src:         { type: string }
+          sizes:       { type: string }
+          type:        { type: string }
+          form_factor: { type: string }
+          label:       { type: string }
+          platform:    { type: string }
+    shortcuts_from_menu: { type: boolean }
+    shortcuts:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          name:        { type: string }
+          url:         { type: string }
+          description: { type: string }
+          icon:        { type: string }
+    push_notification_icon_url:  { type: string }
+    push_notification_badge_url: { type: string }
+    push_notification_icon_fid:  { type: integer }
+    push_notification_badge_fid: { type: integer }
+    ios_meta_enabled:         { type: boolean }
+    ios_status_bar_style:     { type: string }
+    ios_splash_screens:       { type: boolean }
+    ios_splash_bg_color:      { type: string }
+    ios_smart_banner_enabled: { type: boolean }
+    ios_app_id:               { type: string }
+    iarc_rating_id:              { type: string }
+    prefer_related_applications: { type: boolean }
+    related_applications:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          platform: { type: string }
+          url:      { type: string }
+          id:       { type: string }
+    launch_handler_client_mode:      { type: string }
+    edge_side_panel_enabled:         { type: boolean }
+    edge_side_panel_preferred_width: { type: integer }
+    file_handlers:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          action: { type: string }
+    widgets:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          name:     { type: string }
+          tag:      { type: string }
+          template: { type: string }
+          type:     { type: string }
+    note_taking_new_note_url: { type: string }
+    tab_strip_enabled:        { type: boolean }
+    scope_extensions:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          origin: { type: string }
+    sw_enabled:               { type: boolean }
+    sw_debug:                 { type: boolean }
+    sw_cache_version:         { type: string }
+    sw_offline_url:           { type: string }
+    sw_offline_node:          { type: integer }
+    sw_offline_html:          { type: string }
+    sw_auto_version:          { type: boolean }
+    sw_auto_version_interval: { type: integer }
+    sw_bg_sync_enabled:       { type: boolean }
+    sw_bg_sync_tag:           { type: string }
+    sw_periodic_sync_enabled: { type: boolean }
+    sw_periodic_sync_interval: { type: integer }
+    sw_navigation_preload:    { type: boolean }
+    sw_precache_urls:
+      type: sequence
+      sequence: { type: string }
+    sw_strategies:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          pattern:         { type: string }
+          strategy:        { type: string }
+          cache_name:      { type: string }
+          max_entries:     { type: integer }
+          max_age_seconds: { type: integer }
+    push_enabled:       { type: boolean }
+    push_vapid_subject: { type: string }
+    triggers:
+      type: mapping
+      mapping:
+        node_insert:
+          type: mapping
+          mapping:
+            enabled:        { type: boolean }
+            content_types:  { type: sequence, sequence: { type: string } }
+            title_template: { type: string }
+            body_template:  { type: string }
+            url_template:   { type: string }
+            targets:        { type: sequence, sequence: { type: string } }
+            roles:          { type: sequence, sequence: { type: string } }
+        node_update:
+          type: mapping
+          mapping:
+            enabled:        { type: boolean }
+            content_types:  { type: sequence, sequence: { type: string } }
+            title_template: { type: string }
+            body_template:  { type: string }
+            url_template:   { type: string }
+            targets:        { type: sequence, sequence: { type: string } }
+            roles:          { type: sequence, sequence: { type: string } }
+        node_published:
+          type: mapping
+          mapping:
+            enabled:        { type: boolean }
+            content_types:  { type: sequence, sequence: { type: string } }
+            title_template: { type: string }
+            body_template:  { type: string }
+            url_template:   { type: string }
+            targets:        { type: sequence, sequence: { type: string } }
+            roles:          { type: sequence, sequence: { type: string } }
+        comment_insert:
+          type: mapping
+          mapping:
+            enabled:        { type: boolean }
+            content_types:  { type: sequence, sequence: { type: string } }
+            title_template: { type: string }
+            body_template:  { type: string }
+            url_template:   { type: string }
+            targets:        { type: sequence, sequence: { type: string } }
+            roles:          { type: sequence, sequence: { type: string } }
+        comment_reply:
+          type: mapping
+          mapping:
+            enabled:        { type: boolean }
+            content_types:  { type: sequence, sequence: { type: string } }
+            title_template: { type: string }
+            body_template:  { type: string }
+            url_template:   { type: string }
+            targets:        { type: sequence, sequence: { type: string } }
+            roles:          { type: sequence, sequence: { type: string } }
+    install_banner_enabled: { type: boolean }
+    install_banner_delay:   { type: integer }
+    install_banner_title:   { type: string }
+    install_banner_body:    { type: string }
+    web_share_enabled:      { type: boolean }
+    rate_limit_subscribe:   { type: integer }
+    pwa_page_meta:          { type: boolean }
+    https_redirect:         { type: boolean }

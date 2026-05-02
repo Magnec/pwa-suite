@@ -1,0 +1,13 @@
+name: 'PWA Suite'
+type: module
+description: 'Kapsamlı Progressive Web App (PWA) desteği: Web App Manifest, Service Worker, Push Bildirimler ve Install Banner.'
+package: 'PWA'
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:node
+  - drupal:user
+  - drupal:system
+  - drupal:file
+  - drupal:image
+  - drupal:comment
+configure: pwa_suite.settings

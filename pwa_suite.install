@@ -1,0 +1,386 @@
+<?php
+
+/**
+ * @file
+ * PWA Suite modülü kurulum ve güncelleme fonksiyonları.
+ */
+
+/**
+ * Implements hook_schema().
+ *
+ * Tüm tabloları tanımlar. Drupal bu tanımı kullanarak:
+ * - Kurulumda tabloları oluşturur
+ * - Kaldırmada tabloları siler (hook_uninstall içinde)
+ */
+function pwa_suite_schema(): array {
+  $schema['pwa_push_subscription'] = [
+    'description' => 'Push bildirim aboneliklerini saklar.',
+    'fields' => [
+      'id' => [
+        'description' => 'Birincil anahtar.',
+        'type'        => 'serial',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+      ],
+      'uid' => [
+        'description' => 'Kullanıcı ID (0 = anonim).',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'endpoint' => [
+        'description' => 'Push servis endpoint URL.',
+        'type'        => 'varchar',
+        'length'      => 2048,
+        'not null'    => TRUE,
+      ],
+      'subscription_hash' => [
+        'description' => 'Endpoint\'in SHA-256 hash\'i (tekil kontrol için).',
+        'type'        => 'varchar',
+        'length'      => 64,
+        'not null'    => TRUE,
+      ],
+      'auth' => [
+        'description' => 'Auth anahtarı.',
+        'type'        => 'varchar',
+        'length'      => 512,
+        'not null'    => TRUE,
+      ],
+      'p256dh' => [
+        'description' => 'p256dh açık anahtarı.',
+        'type'        => 'varchar',
+        'length'      => 512,
+        'not null'    => TRUE,
+      ],
+      'browser' => [
+        'description' => 'Tarayıcı türü.',
+        'type'        => 'varchar',
+        'length'      => 64,
+        'not null'    => TRUE,
+        'default'     => 'other',
+      ],
+      'platform' => [
+        'description' => 'İşletim sistemi.',
+        'type'        => 'varchar',
+        'length'      => 64,
+        'not null'    => TRUE,
+        'default'     => 'other',
+      ],
+      'status' => [
+        'description' => 'Abonelik durumu: 1 = aktif, 0 = pasif.',
+        'type'        => 'int',
+        'size'        => 'tiny',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 1,
+      ],
+      'created' => [
+        'description' => 'Kayıt zamanı (Unix timestamp).',
+        'type'        => 'int',
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'last_active' => [
+        'description' => 'Son aktiflik zamanı (Unix timestamp).',
+        'type'        => 'int',
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+    ],
+    'primary key' => ['id'],
+    'unique keys'  => ['subscription_hash' => ['subscription_hash']],
+    'indexes'      => [
+      'uid'    => ['uid'],
+      'status' => ['status'],
+    ],
+  ];
+
+  $schema['pwa_push_log'] = [
+    'description' => 'Push bildirim gönderim logları.',
+    'fields' => [
+      'id' => [
+        'description' => 'Birincil anahtar.',
+        'type'        => 'serial',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+      ],
+      'subscription_id' => [
+        'description' => 'İlgili pwa_push_subscription.id.',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'message_hash' => [
+        'description' => 'Mesaj içeriğinin SHA-256 hash\'i.',
+        'type'        => 'varchar',
+        'length'      => 64,
+        'not null'    => TRUE,
+        'default'     => '',
+      ],
+      'title' => [
+        'description' => 'Bildirim başlığı.',
+        'type'        => 'varchar',
+        'length'      => 255,
+        'not null'    => TRUE,
+        'default'     => '',
+      ],
+      'status' => [
+        'description' => 'Gönderim durumu: sent | failed | expired.',
+        'type'        => 'varchar',
+        'length'      => 32,
+        'not null'    => TRUE,
+        'default'     => '',
+      ],
+      'sent_at' => [
+        'description' => 'Gönderim zamanı (Unix timestamp).',
+        'type'        => 'int',
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'error_message' => [
+        'description' => 'Hata mesajı (başarısız gönderimler için).',
+        'type'        => 'varchar',
+        'length'      => 1000,
+        'not null'    => FALSE,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes'      => [
+      'subscription_id' => ['subscription_id'],
+      'status'          => ['status'],
+      'sent_at'         => ['sent_at'],
+    ],
+  ];
+
+  $schema['pwa_push_queue_retry'] = [
+    'description' => 'Başarısız push bildirimler için yeniden deneme kuyruğu.',
+    'fields' => [
+      'id' => [
+        'description' => 'Birincil anahtar.',
+        'type'        => 'serial',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+      ],
+      'subscription_id' => [
+        'description' => 'İlgili pwa_push_subscription.id.',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+      ],
+      'message_data' => [
+        'description' => 'Serialized PwaPushMessage nesnesi.',
+        'type'        => 'blob',
+        'size'        => 'big',
+        'not null'    => TRUE,
+      ],
+      'retry_count' => [
+        'description' => 'Kaç kez denendi.',
+        'type'        => 'int',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'next_retry' => [
+        'description' => 'Bir sonraki deneme zamanı (Unix timestamp).',
+        'type'        => 'int',
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+      'created' => [
+        'description' => 'Kayıt zamanı (Unix timestamp).',
+        'type'        => 'int',
+        'not null'    => TRUE,
+        'default'     => 0,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes'      => [
+      'subscription_id' => ['subscription_id'],
+      'next_retry'      => ['next_retry'],
+    ],
+  ];
+
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ *
+ * Kurulumda çalışır: tablolar hook_schema() ile zaten oluşturulur.
+ * Fiziksel dosyaları oluşturmayı dene (izin yoksa sessizce geç).
+ */
+function pwa_suite_install(): void {
+  try {
+    \Drupal\pwa_suite\PwaStaticFiles::writeAll(
+      \Drupal::configFactory(),
+      \Drupal::state(),
+      \Drupal::moduleHandler(),
+    );
+  }
+  catch (\Exception $e) {
+    \Drupal::logger('pwa_suite')->warning(
+      'Kurulum: statik dosyalar oluşturulamadı — @msg',
+      ['@msg' => $e->getMessage()]
+    );
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Modül kaldırıldığında tüm verileri temizler:
+ * - Veritabanı tabloları
+ * - Drupal config
+ * - State değerleri (VAPID anahtarları dahil)
+ * - Fiziksel sw.js / manifest.webmanifest dosyaları
+ * - Push kuyruğu
+ */
+function pwa_suite_uninstall(): void {
+  $db_schema = \Drupal::database()->schema();
+
+  // Veritabanı tablolarını sil.
+  $tables = ['pwa_push_subscription', 'pwa_push_log', 'pwa_push_queue_retry'];
+  foreach ($tables as $table) {
+    if ($db_schema->tableExists($table)) {
+      $db_schema->dropTable($table);
+    }
+  }
+
+  // Drupal config'i sil.
+  \Drupal::configFactory()->getEditable('pwa_suite.settings')->delete();
+
+  // State değerlerini temizle.
+  \Drupal::state()->deleteMultiple([
+    'pwa_suite.vapid_public_key',
+    'pwa_suite.vapid_private_key',
+    'pwa_suite.write_error.' . md5('sw.js'),
+    'pwa_suite.write_error.' . md5('manifest.webmanifest'),
+    'pwa_suite.write_error.' . md5('manifest.json'),
+  ]);
+
+  // Push kuyruğunu temizle.
+  \Drupal::queue('pwa_suite_push_queue')->deleteQueue();
+
+  // Fiziksel dosyaları sil.
+  \Drupal\pwa_suite\PwaStaticFiles::deleteAll();
+}
+
+/**
+ * sw.js ve manifest.webmanifest'i web root'a yaz (v1.7).
+ */
+function pwa_suite_update_8107(&$sandbox) {
+  try {
+    \Drupal\pwa_suite\PwaStaticFiles::writeAll(
+      \Drupal::configFactory(),
+      \Drupal::state(),
+      \Drupal::moduleHandler(),
+    );
+  }
+  catch (\Exception $e) {
+    return t('UYARI: Statik dosyalar yazılamadı: @e — Web sunucusunun yazma izni var mı?', ['@e' => $e->getMessage()]);
+  }
+  return t("PWA Suite v1.7: sw.js ve manifest.webmanifest web root'a yazıldı.");
+}
+
+/**
+ * sw.js yeniden yaz — 206 Partial Content cache hatası düzeltmesi (v1.8).
+ */
+function pwa_suite_update_8108(&$sandbox) {
+  try {
+    \Drupal\pwa_suite\PwaStaticFiles::writeAll(
+      \Drupal::configFactory(),
+      \Drupal::state(),
+      \Drupal::moduleHandler(),
+    );
+  }
+  catch (\Exception $e) {
+    return t('UYARI: @e', ['@e' => $e->getMessage()]);
+  }
+  return t('PWA Suite v1.8: sw.js güncellendi.');
+}
+
+/**
+ * hook_schema() tanımlandı, retry_count kaldırıldı; FCM 4xx düzeltmesi (v1.9).
+ *
+ * Mevcut kurulumlar için: pwa_push_log tablosunu güncelle.
+ */
+function pwa_suite_update_8109(&$sandbox): string {
+  $db_schema = \Drupal::database()->schema();
+
+  // pwa_push_log'dan retry_count sütununu kaldır (schema'da yok, ama eski
+  // sürümlerde eklenmiş olabilir).
+  if ($db_schema->tableExists('pwa_push_log') && $db_schema->fieldExists('pwa_push_log', 'retry_count')) {
+    $db_schema->dropField('pwa_push_log', 'retry_count');
+  }
+
+  // pwa_push_queue_retry tablosu eksikse oluştur.
+  if (!$db_schema->tableExists('pwa_push_queue_retry')) {
+    $schema = pwa_suite_schema();
+    $db_schema->createTable('pwa_push_queue_retry', $schema['pwa_push_queue_retry']);
+  }
+
+  return t('PWA Suite v1.9: Şema düzeltildi, FCM 4xx hatası giderildi.');
+}
+
+/**
+ * serialize() → JSON migration: pwa_push_queue_retry tablosunu güncelle (v3.0).
+ *
+ * Eski sürümlerde serialize() ile saklanan message_data değerlerini
+ * JSON formatına çevirir. Güvenlik açığını giderir.
+ */
+function pwa_suite_update_8111(&$sandbox): string {
+  $db     = \Drupal::database();
+  $count  = 0;
+  $errors = 0;
+
+  if (!\Drupal::database()->schema()->tableExists('pwa_push_queue_retry')) {
+    return t('pwa_push_queue_retry tablosu yok — atlandı.');
+  }
+
+  $rows = $db->select('pwa_push_queue_retry', 'r')
+    ->fields('r', ['id', 'message_data'])
+    ->execute()
+    ->fetchAll();
+
+  foreach ($rows as $row) {
+    // Zaten JSON mı?
+    $data = json_decode($row->message_data, TRUE);
+    if (is_array($data)) {
+      continue; // Zaten JSON.
+    }
+
+    // PHP serialized string mi?
+    $msg = NULL;
+    try {
+      // PHP 8.0+ - unserialize allowed_classes ile nesne injection engelle.
+      $unserialized = @unserialize($row->message_data, ['allowed_classes' => FALSE]);
+      if (is_array($unserialized)) {
+        $msg = $unserialized;
+      }
+    }
+    catch (\Exception $e) {}
+
+    if ($msg !== NULL) {
+      try {
+        $db->update('pwa_push_queue_retry')
+          ->fields(['message_data' => json_encode($msg, JSON_UNESCAPED_UNICODE)])
+          ->condition('id', $row->id)
+          ->execute();
+        $count++;
+      }
+      catch (\Exception $e) {
+        $errors++;
+      }
+    }
+    else {
+      // Parse edilemeyen satırı sil.
+      $db->delete('pwa_push_queue_retry')->condition('id', $row->id)->execute();
+      $errors++;
+    }
+  }
+
+  return t('PWA Suite v3.0: @count retry kaydı JSON formatına çevrildi. @errors satır silindi.', ['@count' => $count, '@errors' => $errors]);
+}

@@ -1,0 +1,180 @@
+# sw.js — priority 200 EventSubscriber ÖNCE yakalar,
+# bu route sadece Nginx php-fpm'e aktarırsa devreye girer.
+pwa_suite.service_worker:
+  path: '/sw.js'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PwaStaticController::serviceWorker'
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE
+
+# manifest.webmanifest (W3C standardı)
+pwa_suite.manifest:
+  path: '/manifest.webmanifest'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PwaStaticController::manifest'
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE
+
+# manifest.json — PWA Builder, Lighthouse ve birçok araç bu URL'i kontrol eder
+pwa_suite.manifest_json:
+  path: '/manifest.json'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PwaStaticController::manifest'
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE
+
+pwa_suite.offline_preview:
+  path: '/pwa-offline-preview'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PwaOfflineController::preview'
+    _title: 'Offline Önizleme'
+  requirements:
+    _permission: 'administer pwa suite'
+
+pwa_suite.splash:
+  path: '/pwa/splash/{dimensions}'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PwaSplashController::generate'
+  requirements:
+    _access: 'TRUE'
+    dimensions: '\d+x\d+'
+  options:
+    no_cache: TRUE
+
+pwa_suite.vapid_public_key:
+  path: '/pwa/vapid-public-key'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PushSubscriptionController::vapidPublicKey'
+  requirements:
+    _access: 'TRUE'
+
+pwa_suite.push_subscribe:
+  path: '/pwa/push/subscribe'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PushSubscriptionController::subscribe'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE
+
+pwa_suite.push_unsubscribe:
+  path: '/pwa/push/unsubscribe'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PushSubscriptionController::unsubscribe'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE
+
+pwa_suite.push_update:
+  path: '/pwa/push/update'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PushSubscriptionController::update'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE
+
+pwa_suite.push_status:
+  path: '/pwa/push/status'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PushSubscriptionController::status'
+  methods: [GET]
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE
+
+pwa_suite.sync_forms:
+  path: '/pwa/sync/forms'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PwaSyncController::syncForms'
+  methods: [POST]
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE
+
+pwa_suite.settings:
+  path: '/admin/config/system/pwa-suite'
+  defaults:
+    _form: '\Drupal\pwa_suite\Form\PwaSuiteSettingsForm'
+    _title: 'PWA Suite'
+  requirements:
+    _permission: 'administer pwa suite'
+
+# PWA Diagnostics — neyin kırık olduğunu gösterir
+pwa_suite.diagnostics:
+  path: '/admin/config/system/pwa-suite/tani'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PwaDiagnosticsController::page'
+    _title: 'PWA Tanı'
+  requirements:
+    _permission: 'administer pwa suite'
+
+pwa_suite.subscribers:
+  path: '/admin/config/system/pwa-suite/aboneler'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PushSubscriptionController::adminList'
+    _title: 'Push Aboneleri'
+  requirements:
+    _permission: 'administer pwa suite'
+
+pwa_suite.subscriber_delete:
+  path: '/admin/config/system/pwa-suite/aboneler/{id}/sil'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PushSubscriptionController::deleteSubscriber'
+    _title: 'Aboneyi Sil'
+  requirements:
+    _permission: 'administer pwa suite'
+    id: '\d+'
+
+pwa_suite.subscriber_delete_bulk:
+  path: '/admin/config/system/pwa-suite/aboneler/toplu-sil'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PushSubscriptionController::deleteSubscriberBulk'
+    _title: 'Pasif Abonelikleri Sil'
+  requirements:
+    _permission: 'administer pwa suite'
+
+pwa_suite.send_notification:
+  path: '/admin/config/system/pwa-suite/bildirim-gonder'
+  defaults:
+    _form: '\Drupal\pwa_suite\Form\SendNotificationForm'
+    _title: 'Bildirim Gönder'
+  requirements:
+    _permission: 'administer pwa suite'
+
+pwa_suite.stats:
+  path: '/admin/config/system/pwa-suite/istatistik'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PushSubscriptionController::stats'
+    _title: 'İstatistikler'
+  requirements:
+    _permission: 'administer pwa suite'
+
+pwa_suite.stats_log_delete:
+  path: '/admin/config/system/pwa-suite/istatistik/log/{id}/sil'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PushSubscriptionController::deleteLog'
+    _title: 'Log Kaydı Sil'
+  requirements:
+    _permission: 'administer pwa suite'
+    id: '\d+'
+
+pwa_suite.stats_log_clear:
+  path: '/admin/config/system/pwa-suite/istatistik/temizle'
+  defaults:
+    _controller: '\Drupal\pwa_suite\Controller\PushSubscriptionController::clearLogs'
+    _title: 'Tüm Logları Sil'
+  requirements:
+    _permission: 'administer pwa suite'

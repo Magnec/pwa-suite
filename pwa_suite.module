@@ -1,0 +1,195 @@
+<?php
+/**
+ * @file
+ * PWA Suite — Ana modül.
+ */
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+function pwa_suite_theme(): array {
+  return [
+    'pwa_notification_block' => ['variables' => [
+      'push_enabled'      => FALSE,
+      'variant'           => 'default',
+      'subscribe_label'   => NULL,
+      'unsubscribe_label' => NULL,
+      'toggle_label_on'   => NULL,
+      'toggle_label_off'  => NULL,
+      'modal_title'       => NULL,
+      'modal_description' => NULL,
+      'modal_icon'        => '🔔',
+      'modal_auto_delay'  => 5000,
+      'card_title'        => NULL,
+      'card_description'  => NULL,
+      'card_image_url'    => NULL,
+      'banner_text'       => NULL,
+      'show_status'       => TRUE,
+    ]],
+    'pwa_install_block'      => ['variables' => ['title'=>NULL,'body'=>NULL,'install_label'=>NULL]],
+    'pwa_install_banner'     => ['variables' => ['title'=>NULL,'body'=>NULL,'install_label'=>NULL,'dismiss_label'=>NULL]],
+    'pwa_ios_install_modal'  => ['variables' => ['title'=>NULL,'close_label'=>NULL]],
+    'pwa_share_block'        => ['variables' => ['label'=>NULL,'url'=>NULL,'title'=>NULL,'text'=>NULL]],
+  ];
+}
+
+function pwa_suite_help($route_name, RouteMatchInterface $route_match) {
+  if ($route_name === 'help.page.pwa_suite') {
+    return '<h3>' . t('PWA Suite') . '</h3><p>' . t('Kapsamlı PWA desteği: Manifest, Service Worker, Push, iOS metatag.') . '</p>';
+  }
+}
+
+function pwa_suite_page_attachments(array &$attachments): void {
+  $config      = \Drupal::config('pwa_suite.settings');
+  $site_config = \Drupal::config('system.site');
+
+  // manifest.webmanifest — crossorigin gereklidir (credentials: 'omit' ile fetch edilir).
+  $attachments['#attached']['html_head_link'][] = [
+    ['rel' => 'manifest', 'href' => '/manifest.webmanifest', 'crossorigin' => 'use-credentials'],
+    TRUE,
+  ];
+
+  $theme_color = $config->get('theme_color') ?: '#1565c0';
+  $app_name    = $config->get('name') ?: $site_config->get('name');
+
+  if ($config->get('pwa_page_meta')) {
+    $meta_list = [
+      ['name' => 'theme-color',                'content' => $theme_color],
+      ['name' => 'mobile-web-app-capable',      'content' => 'yes'],
+      ['name' => 'application-name',            'content' => $app_name],
+      ['name' => 'msapplication-TileColor',     'content' => $theme_color],
+      ['name' => 'msapplication-tap-highlight', 'content' => 'no'],
+    ];
+    foreach ($meta_list as $idx => $meta) {
+      $attachments['#attached']['html_head'][] = [
+        ['#tag' => 'meta', '#attributes' => $meta],
+        'pwa_suite_meta_' . $idx,
+      ];
+    }
+    $attachments['#attached']['html_head'][] = [
+      ['#tag' => 'meta', '#attributes' => ['name' => 'viewport', 'content' => 'width=device-width, initial-scale=1, viewport-fit=cover']],
+      'pwa_suite_viewport',
+    ];
+  }
+
+  $fav_fid = (int) $config->get('favicon_fid');
+  if ($fav_fid) {
+    $fav_file = \Drupal\file\Entity\File::load($fav_fid);
+    if ($fav_file) {
+      $fav_url = \Drupal::service('file_url_generator')->generateAbsoluteString($fav_file->getFileUri());
+      $attachments['#attached']['html_head_link'][] = [['rel' => 'icon', 'href' => $fav_url, 'type' => $fav_file->getMimeType()], TRUE];
+    }
+  }
+
+  if ($config->get('ios_meta_enabled')) {
+    $ios_status = $config->get('ios_status_bar_style') ?: 'black-translucent';
+    $ios_metas = [
+      ['name' => 'apple-mobile-web-app-capable',          'content' => 'yes'],
+      ['name' => 'apple-mobile-web-app-status-bar-style', 'content' => $ios_status],
+      ['name' => 'apple-mobile-web-app-title',            'content' => $app_name],
+    ];
+    foreach ($ios_metas as $idx => $meta) {
+      $attachments['#attached']['html_head'][] = [['#tag' => 'meta', '#attributes' => $meta], 'pwa_suite_ios_' . $idx];
+    }
+    $icon_fids = $config->get('icon_fids') ?: [];
+    $apple_fid = (int) ($icon_fids['icon_180'] ?? $icon_fids['icon_192'] ?? $icon_fids['icon_512'] ?? 0);
+    if ($apple_fid) {
+      $apple_file = \Drupal\file\Entity\File::load($apple_fid);
+      if ($apple_file) {
+        $apple_url = \Drupal::service('file_url_generator')->generateAbsoluteString($apple_file->getFileUri());
+        $attachments['#attached']['html_head_link'][] = [['rel' => 'apple-touch-icon', 'href' => $apple_url], TRUE];
+      }
+    }
+    if ($config->get('ios_splash_screens')) {
+      _pwa_suite_attach_ios_splash($attachments, $config);
+    }
+    if ($config->get('ios_smart_banner_enabled') && $config->get('ios_app_id')) {
+      $attachments['#attached']['html_head'][] = [
+        ['#tag' => 'meta', '#attributes' => ['name' => 'apple-itunes-app', 'content' => 'app-id=' . $config->get('ios_app_id')]],
+        'pwa_suite_ios_smart_banner',
+      ];
+    }
+  }
+
+  $vapid_service = \Drupal::service('pwa_suite.vapid_key_service');
+  $attachments['#attached']['drupalSettings']['pwaSuite'] = [
+    'vapidPublicKey'       => $vapid_service->getPublicKey() ?? '',
+    'subscribeEndpoint'    => '/pwa/push/subscribe',
+    'unsubscribeEndpoint'  => '/pwa/push/unsubscribe',
+    'statusEndpoint'       => '/pwa/push/status',
+    'userLoggedIn'         => \Drupal::currentUser()->isAuthenticated(),
+    'autoPromptDelay'      => (int) ($config->get('install_banner_delay') ?: 3000),
+    'showInstallBanner'    => (bool) $config->get('install_banner_enabled'),
+    'installBannerTitle'   => (string) ($config->get('install_banner_title') ?: t('Uygulamayı Yükle')),
+    'installBannerBody'    => strip_tags((string) ($config->get('install_banner_body') ?: '')),
+    'swEnabled'            => (bool) $config->get('sw_enabled'),
+    'pushEnabled'          => (bool) $config->get('push_enabled'),
+    'themeColor'           => $theme_color,
+    'webShareEnabled'      => (bool) $config->get('web_share_enabled'),
+    'bgSyncEnabled'        => (bool) $config->get('sw_bg_sync_enabled'),
+    'periodicSyncEnabled'  => (bool) $config->get('sw_periodic_sync_enabled'),
+    'periodicSyncInterval' => (int) ($config->get('sw_periodic_sync_interval') ?: 3600),
+  ];
+
+  $attachments['#attached']['library'][] = 'pwa_suite/pwa_suite';
+}
+
+function _pwa_suite_attach_ios_splash(array &$attachments, $config): void {
+  $icon_fids = $config->get('icon_fids') ?: [];
+  $fid = (int) ($icon_fids['icon_512'] ?? $icon_fids['icon_192'] ?? 0);
+  if (!$fid) return;
+  $file = \Drupal\file\Entity\File::load($fid);
+  if (!$file) return;
+  $icon_url = \Drupal::service('file_url_generator')->generateAbsoluteString($file->getFileUri());
+  $splash_sizes = [
+    [320,568,2],[375,667,2],[414,736,3],[375,812,3],
+    [390,844,3],[430,932,3],[768,1024,2],[834,1112,2],[1024,1366,2],
+  ];
+  foreach ($splash_sizes as [$w, $h, $dpr]) {
+    $attachments['#attached']['html_head_link'][] = [[
+      'rel'   => 'apple-touch-startup-image',
+      'href'  => $icon_url,
+      'media' => "(device-width: {$w}px) and (device-height: {$h}px) and (-webkit-device-pixel-ratio: {$dpr}) and (orientation: portrait)",
+    ], TRUE];
+  }
+}
+
+function pwa_suite_entity_insert(EntityInterface $entity): void {
+  \Drupal::service('pwa_suite.trigger_service')->onEntityInsert($entity);
+}
+function pwa_suite_entity_update(EntityInterface $entity): void {
+  \Drupal::service('pwa_suite.trigger_service')->onEntityUpdate($entity);
+}
+
+/**
+ * Implements hook_cache_flush().
+ *
+ * drush cr çalışınca sw.js ve manifest.webmanifest'i güncelle.
+ */
+function pwa_suite_cache_flush(): void {
+  try {
+    \Drupal\pwa_suite\PwaStaticFiles::writeAll(
+      \Drupal::configFactory(),
+      \Drupal::state(),
+      \Drupal::moduleHandler(),
+    );
+  }
+  catch (\Exception $e) {
+    \Drupal::logger('pwa_suite')->warning('cache_flush: sw.js yazılamadı: @e', ['@e' => $e->getMessage()]);
+  }
+}
+
+function pwa_suite_cron(): void {
+  $config = \Drupal::config('pwa_suite.settings');
+  $now    = \Drupal::time()->getRequestTime();
+  if ($config->get('sw_auto_version')) {
+    $last     = \Drupal::state()->get('pwa_suite.last_version_bump', 0);
+    $interval = (int) ($config->get('sw_auto_version_interval') ?: 604800);
+    if (($now - $last) >= $interval) {
+      $new_ver = 'v' . date('Ymd-Hi', $now);
+      \Drupal::configFactory()->getEditable('pwa_suite.settings')->set('sw_cache_version', $new_ver)->save();
+      \Drupal::state()->set('pwa_suite.last_version_bump', $now);
+    }
+  }
+  \Drupal::database()->delete('pwa_push_log')->condition('sent_at', $now - (30 * 86400), '<')->execute();
+  \Drupal::service('pwa_suite.push_notification_service')->processRetryQueue();
+}

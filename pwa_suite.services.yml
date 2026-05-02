@@ -1,0 +1,45 @@
+services:
+  pwa_suite.vapid_key_service:
+    class: Drupal\pwa_suite\Service\PwaVapidKeyService
+    arguments:
+      - '@state'
+      - '@logger.factory'
+      - '@config.factory'
+
+  pwa_suite.push_notification_service:
+    class: Drupal\pwa_suite\Service\PwaPushNotificationService
+    arguments:
+      - '@pwa_suite.vapid_key_service'
+      - '@entity_type.manager'
+      - '@queue'
+      - '@logger.factory'
+      - '@config.factory'
+      - '@database'
+      - '@request_stack'
+
+  pwa_suite.trigger_service:
+    class: Drupal\pwa_suite\Service\PwaTriggerService
+    arguments:
+      - '@pwa_suite.push_notification_service'
+      - '@config.factory'
+      - '@token'
+      - '@logger.factory'
+      - '@entity_type.manager'
+      - '@database'
+
+  pwa_suite.request_subscriber:
+    class: Drupal\pwa_suite\EventSubscriber\PwaRequestSubscriber
+    arguments:
+      - '@config.factory'
+      - '@state'
+      - '@module_handler'
+    tags:
+      - { name: event_subscriber }
+  pwa_suite.config_save_subscriber:
+    class: Drupal\pwa_suite\EventSubscriber\PwaConfigSaveSubscriber
+    arguments:
+      - '@config.factory'
+      - '@state'
+      - '@module_handler'
+    tags:
+      - { name: event_subscriber }

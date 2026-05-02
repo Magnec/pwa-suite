@@ -1,0 +1,27 @@
+pwa_suite:
+  version: VERSION
+  css:
+    theme:
+      css/pwa-suite.css: { minified: false }
+  js:
+    js/pwa-suite.js: { minified: false }
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+
+pwa_suite.admin:
+  version: VERSION
+  css:
+    theme:
+      css/pwa-suite-admin.css: { minified: false }
+  dependencies:
+    - core/drupal
+
+pwa_bg_sync:
+  version: VERSION
+  js:
+    js/pwa-bg-sync.js: { minified: false }
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+    - pwa_suite/pwa_suite
